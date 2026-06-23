@@ -1,4 +1,4 @@
-# 💸 Masroof — مصروف
+##  Masroof — مصروف
 
 A modern, bilingual (English / العربية) personal finance manager.
 Built with **React + Vite** (Bun). Sign in with **Clerk** and your data syncs to the
