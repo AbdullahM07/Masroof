@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Salary Manager</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="app">
+
+  <!-- ═══════════════ SIDEBAR ═══════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">EGP</div>
+      <span class="brand-name">Salary Manager</span>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-btn active" data-tab="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+        </svg>
+        <span>Dashboard</span>
+      </button>
+      <button class="nav-btn" data-tab="income">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
+        </svg>
+        <span>Income</span>
+      </button>
+      <button class="nav-btn" data-tab="expenses">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>
+        </svg>
+        <span>Expenses</span>
+      </button>
+      <button class="nav-btn" data-tab="cards">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+        </svg>
+        <span>Cards</span>
+      </button>
+    </nav>
+  </aside>
+
+  <!-- ═══════════════ MAIN ═══════════════ -->
+  <main class="main-content">
+
+    <!-- ─── DASHBOARD ─── -->
+    <section id="tab-dashboard" class="tab-section active">
+      <div class="page-header">
+        <h2 class="page-title">Dashboard</h2>
+        <div class="month-picker-wrap">
+          <label for="dash-month">Month</label>
+          <input type="month" id="dash-month" />
+        </div>
+      </div>
+
+      <div class="stats-grid" id="dash-stats"></div>
+
+      <div class="charts-grid">
+        <div class="card">
+          <h3>Expenses by Category</h3>
+          <div class="chart-wrap"><canvas id="chart-category"></canvas></div>
+        </div>
+        <div class="card">
+          <h3>By Payment Method</h3>
+          <div class="chart-wrap"><canvas id="chart-payment"></canvas></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Recent Transactions</h3>
+        <div id="dash-recent"></div>
+      </div>
+    </section>
+
+    <!-- ─── INCOME ─── -->
+    <section id="tab-income" class="tab-section">
+      <div class="page-header">
+        <h2 class="page-title">Income</h2>
+      </div>
+      <div class="two-col">
+        <div class="card">
+          <h3>Add Income</h3>
+          <form id="income-form" class="form">
+            <div class="form-group">
+              <label for="income-amount">Amount (EGP)</label>
+              <input type="number" id="income-amount" placeholder="0.00" min="0" step="0.01" required />
+            </div>
+            <div class="form-group">
+              <label for="income-source">Source</label>
+              <input type="text" id="income-source" placeholder="e.g. Main Salary, Freelance…" required />
+            </div>
+            <div class="form-group">
+              <label for="income-date">Date</label>
+              <input type="date" id="income-date" required />
+            </div>
+            <div class="form-group">
+              <label for="income-note">Note (optional)</label>
+              <input type="text" id="income-note" placeholder="Any extra detail…" />
+            </div>
+            <button type="submit" class="btn btn-primary">Add Income</button>
+          </form>
+        </div>
+        <div class="card">
+          <h3>Income History</h3>
+          <div class="month-filter-row">
+            <input type="month" id="income-month-filter" />
+          </div>
+          <div id="income-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── EXPENSES ─── -->
+    <section id="tab-expenses" class="tab-section">
+      <div class="page-header">
+        <h2 class="page-title">Expenses</h2>
+      </div>
+      <div class="two-col">
+        <div class="card">
+          <h3>Add Expense</h3>
+          <form id="expense-form" class="form">
+            <div class="form-group">
+              <label for="exp-amount">Amount (EGP)</label>
+              <input type="number" id="exp-amount" placeholder="0.00" min="0" step="0.01" required />
+            </div>
+            <div class="form-group">
+              <label for="exp-desc">Description</label>
+              <input type="text" id="exp-desc" placeholder="What did you buy?" required />
+            </div>
+            <div class="form-group">
+              <label for="exp-category">Category</label>
+              <select id="exp-category" required>
+                <option value="">— Select category —</option>
+                <option value="food">🍔 Food &amp; Dining</option>
+                <option value="rent">🏠 Rent &amp; Housing</option>
+                <option value="transport">🚗 Transport</option>
+                <option value="entertainment">🎬 Entertainment</option>
+                <option value="health">💊 Health</option>
+                <option value="shopping">🛍️ Shopping</option>
+                <option value="bills">💡 Bills &amp; Utilities</option>
+                <option value="education">📚 Education</option>
+                <option value="other">📦 Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Payment Method</label>
+              <div class="radio-group">
+                <label class="radio-label">
+                  <input type="radio" name="payment" value="cash" checked /> Cash
+                </label>
+                <label class="radio-label">
+                  <input type="radio" name="payment" value="visa" /> Visa
+                </label>
+              </div>
+            </div>
+            <div class="form-group" id="card-select-group" style="display:none">
+              <label for="exp-card">Select Card</label>
+              <select id="exp-card">
+                <option value="">— Add a card first —</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="exp-date">Date</label>
+              <input type="date" id="exp-date" required />
+            </div>
+            <button type="submit" class="btn btn-primary">Add Expense</button>
+          </form>
+        </div>
+        <div class="card">
+          <h3>Expenses List</h3>
+          <div class="filters-row">
+            <input type="month" id="exp-month-filter" />
+            <select id="exp-cat-filter">
+              <option value="">All Categories</option>
+              <option value="food">Food &amp; Dining</option>
+              <option value="rent">Rent &amp; Housing</option>
+              <option value="transport">Transport</option>
+              <option value="entertainment">Entertainment</option>
+              <option value="health">Health</option>
+              <option value="shopping">Shopping</option>
+              <option value="bills">Bills &amp; Utilities</option>
+              <option value="education">Education</option>
+              <option value="other">Other</option>
+            </select>
+            <select id="exp-pay-filter">
+              <option value="">All Methods</option>
+              <option value="cash">Cash</option>
+              <option value="visa">Visa</option>
+            </select>
+          </div>
+          <div id="expense-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── CARDS ─── -->
+    <section id="tab-cards" class="tab-section">
+      <div class="page-header">
+        <h2 class="page-title">My Cards</h2>
+      </div>
+      <div class="two-col">
+        <div class="card">
+          <h3>Add Card</h3>
+          <form id="card-form" class="form">
+            <div class="form-group">
+              <label for="card-name">Card Name</label>
+              <input type="text" id="card-name" placeholder="e.g. CIB Visa, NBE Debit…" required />
+            </div>
+            <div class="form-group">
+              <label for="card-last4">Last 4 Digits (optional)</label>
+              <input type="text" id="card-last4" placeholder="1234" maxlength="4" pattern="\d{0,4}" />
+            </div>
+            <div class="form-group">
+              <label>Card Color</label>
+              <div class="color-picker" id="color-picker">
+                <button type="button" class="color-swatch active" data-color="#2563eb" style="background:#2563eb"></button>
+                <button type="button" class="color-swatch" data-color="#7c3aed" style="background:#7c3aed"></button>
+                <button type="button" class="color-swatch" data-color="#dc2626" style="background:#dc2626"></button>
+                <button type="button" class="color-swatch" data-color="#059669" style="background:#059669"></button>
+                <button type="button" class="color-swatch" data-color="#d97706" style="background:#d97706"></button>
+                <button type="button" class="color-swatch" data-color="#0891b2" style="background:#0891b2"></button>
+                <button type="button" class="color-swatch" data-color="#be185d" style="background:#be185d"></button>
+                <button type="button" class="color-swatch" data-color="#1e293b" style="background:#1e293b"></button>
+              </div>
+              <input type="hidden" id="card-color" value="#2563eb" />
+            </div>
+            <button type="submit" class="btn btn-primary">Add Card</button>
+          </form>
+        </div>
+        <div class="card">
+          <h3>Saved Cards</h3>
+          <div id="cards-list"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="js/utils.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/cards.js"></script>
+<script src="js/income.js"></script>
+<script src="js/expenses.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+{
+  "name": "masrouf",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "description": "Masrouf — bilingual personal finance manager (React + Vite) with Clerk auth & MongoDB cloud sync",
+  "packageManager": "bun@1.3.13",
+  "engines": {
+    "bun": ">=1.3.0"
+  },
+  "scripts": {
+    "dev": "node ./node_modules/vite/bin/vite.js --port 3000 --host",
+    "dev:bun": "bun --bun vite --port 3000 --host",
+    "build": "vite build",
+    "preview": "node ./node_modules/vite/bin/vite.js preview --port 3000 --host",
+    "start": "node ./node_modules/vite/bin/vite.js --port 3000 --host",
+    "vercel-dev": "vercel dev"
+  },
+  "dependencies": {
+    "@clerk/backend": "^3.8.2",
+    "@clerk/clerk-react": "^5.61.3",
+    "@fluentui/react-components": "^9.74.1",
+    "mongodb": "^7.3.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "recharts": "^2.12.7",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.4.2"
+  }
+}
