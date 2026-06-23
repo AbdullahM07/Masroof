@@ -385,8 +385,16 @@ a { color: var(--brand-ink); }
 .app-loading { min-height: 100vh; display: grid; place-items: center; }
 
 /* ════════════ Landing (signed-out) ════════════ */
-.landing { min-height: 100vh; display: grid; grid-template-columns: 1.1fr 1fr; }
-@media (max-width: 900px) { .landing { grid-template-columns: 1fr; } }
+/* minmax(0,…) stops a wide child (e.g. Clerk's card) from stretching the track
+   past the viewport and causing horizontal scroll. */
+.landing { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); }
+.landing-hero, .landing-auth { min-width: 0; }
+@media (max-width: 900px) {
+  .landing { grid-template-columns: minmax(0, 1fr); }
+  .landing-hero { padding: 64px 22px 28px; gap: 14px; }
+  .landing-auth { padding: 28px 22px 48px; }
+  .hero-visual { align-self: center; }
+}
 
 .landing-lang {
   position: fixed; top: 16px; inset-inline-end: 16px; z-index: 5;
@@ -415,15 +423,18 @@ a { color: var(--brand-ink); }
 }
 .landing-feats .lf-ico svg { width: 18px; height: 18px; }
 
-.landing-auth { display: grid; place-items: center; padding: 40px 24px; background: var(--bg); }
-.landing-auth-inner { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.landing-auth { display: grid; place-items: center; padding: 40px 24px; background: var(--bg); min-width: 0; }
+.landing-auth-inner { display: flex; flex-direction: column; align-items: center; gap: 14px; width: 100%; max-width: 420px; }
 .landing-auth-inner h2 { font-size: 20px; font-weight: 800; }
 .landing-cta-note { font-size: 12.5px; color: var(--text-faint); }
+/* keep Clerk's card inside the column on narrow screens */
+.landing-auth .cl-rootBox { width: 100%; }
+.landing-auth .cl-card { width: 100%; max-width: 100%; }
 
 /* hero preview card */
 .hero-visual { margin-top: 14px; }
 .hv-card {
-  display: inline-flex; align-items: center; gap: 20px;
+  display: inline-flex; align-items: center; gap: 20px; flex-wrap: wrap; max-width: 100%;
   padding: 18px 22px; background: var(--surface);
   border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-lg);
 }
@@ -793,7 +804,17 @@ a { color: var(--brand-ink); }
   .topbar-titles p { display: none; }
   .page-body { padding-top: 16px; }
   .pace-metrics { grid-template-columns: 1fr 1fr; }
+  /* keep the top bar on one line: truncate the title instead of pushing the
+     action buttons off-screen */
+  .topbar { gap: 8px; }
+  .topbar .row { min-width: 0; flex: 1; }
+  .topbar-titles { min-width: 0; }
+  .topbar-titles h1 { font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .topbar-actions { gap: 4px; flex-shrink: 0; }
+  .topbar-actions .fui-Button { min-width: 32px; }
 }
+/* smoother momentum scrolling for wide tables on touch devices */
+.table-wrap { -webkit-overflow-scrolling: touch; }
 
 /* respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
