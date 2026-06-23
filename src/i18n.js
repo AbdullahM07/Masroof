@@ -28,6 +28,16 @@ const dict = {
   gotoThisMonth:  { en: 'This month',  ar: 'هذا الشهر' },
   clear:          { en: 'Clear',       ar: 'مسح' },
 
+  // ── landing / hero ──
+  heroTitle:        { en: 'Take control of your money', ar: 'سيطر على مصروفاتك' },
+  heroSub:          { en: 'Know where every pound goes — income, expenses, budgets and goals in one place, synced across all your devices.', ar: 'اعرف كل جنيه راح فين — دخلك ومصروفاتك وميزانياتك وأهدافك في مكان واحد، ومتزامنة على كل أجهزتك.' },
+  heroFeatTrack:    { en: 'Track every transaction', ar: 'تتبّع كل عملية' },
+  heroFeatBudget:   { en: 'Budgets & smart alerts', ar: 'ميزانيات وتنبيهات ذكية' },
+  heroFeatInsights: { en: 'Analytics, trends & reports', ar: 'تحليلات واتجاهات وتقارير' },
+  heroFeatSync:     { en: 'Private & synced everywhere', ar: 'خاص ومتزامن في كل مكان' },
+  heroAuthTitle:    { en: 'Get started', ar: 'ابدأ الآن' },
+  heroCtaNote:      { en: 'Free • your data stays private', ar: 'مجاني • بياناتك تفضل خاصة' },
+
   // ── auth / cloud sync ──
   loadingData:    { en: 'Loading your data…', ar: 'جارٍ تحميل بياناتك…' },
   syncSaving:     { en: 'Saving…',  ar: 'جارٍ الحفظ…' },

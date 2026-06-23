@@ -381,18 +381,78 @@ a { color: var(--brand-ink); }
 /* (no .filters-row input/select rule — it leaked padding into Fluent's inner
    <input>/<select> and made the boxes uneven; Fluent sizes them itself) */
 
-/* ════════════ Auth screen ════════════ */
+/* ════════════ Loading ════════════ */
 .app-loading { min-height: 100vh; display: grid; place-items: center; }
-.auth-screen {
-  min-height: 100vh; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 22px; padding: 32px 16px;
-  background: var(--bg);
+
+/* ════════════ Landing (signed-out) ════════════ */
+.landing { min-height: 100vh; display: grid; grid-template-columns: 1.1fr 1fr; }
+@media (max-width: 900px) { .landing { grid-template-columns: 1fr; } }
+
+.landing-lang {
+  position: fixed; top: 16px; inset-inline-end: 16px; z-index: 5;
+  height: 36px; min-width: 40px; padding: 0 12px;
+  border-radius: 99px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text); font-weight: 800; font-size: 13px;
 }
-.auth-brand { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.auth-brand .auth-logo { color: var(--brand-ink); display: inline-flex; }
-.auth-brand h1 { font-size: 26px; font-weight: 800; letter-spacing: -.4px; }
-.auth-brand p { color: var(--text-muted); font-size: 14px; }
-.auth-clerk-card { box-shadow: var(--shadow-lg) !important; }
+.landing-lang:hover { border-color: var(--brand); }
+
+.landing-hero {
+  position: relative; overflow: hidden;
+  display: flex; flex-direction: column; justify-content: center; gap: 18px;
+  padding: 56px clamp(24px, 6vw, 80px);
+  background: linear-gradient(165deg, color-mix(in srgb, var(--brand) 13%, var(--surface)), var(--surface) 70%);
+}
+.landing-brand { display: flex; align-items: center; gap: 10px; }
+.landing-logo { color: var(--brand-ink); display: inline-flex; }
+.landing-name { font-weight: 800; font-size: 20px; }
+.landing-title { font-size: clamp(30px, 5vw, 46px); font-weight: 800; line-height: 1.12; letter-spacing: -.5px; max-width: 15ch; }
+.landing-sub { font-size: clamp(15px, 1.5vw, 18px); color: var(--text-muted); line-height: 1.6; max-width: 48ch; }
+.landing-feats { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-top: 4px; }
+.landing-feats li { display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 15px; }
+.landing-feats .lf-ico {
+  display: grid; place-items: center; width: 34px; height: 34px; flex-shrink: 0;
+  border-radius: 10px; background: color-mix(in srgb, var(--brand) 14%, transparent); color: var(--brand-ink);
+}
+.landing-feats .lf-ico svg { width: 18px; height: 18px; }
+
+.landing-auth { display: grid; place-items: center; padding: 40px 24px; background: var(--bg); }
+.landing-auth-inner { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.landing-auth-inner h2 { font-size: 20px; font-weight: 800; }
+.landing-cta-note { font-size: 12.5px; color: var(--text-faint); }
+
+/* hero preview card */
+.hero-visual { margin-top: 14px; }
+.hv-card {
+  display: inline-flex; align-items: center; gap: 20px;
+  padding: 18px 22px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+}
+.hv-card .ring-center { line-height: 1.1; text-align: center; }
+.hv-ring-pct { font-size: 20px; font-weight: 800; }
+.hv-ring-cap { font-size: 10px; color: var(--text-muted); }
+.hv-chips { display: flex; flex-direction: column; gap: 8px; }
+.hv-chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 6px 12px; border-radius: 99px; font-weight: 800; font-size: 13px;
+  background: color-mix(in srgb, var(--c) 15%, transparent); color: var(--c); white-space: nowrap;
+}
+
+/* entrance + float animations */
+@keyframes landFadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes landFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+@media (prefers-reduced-motion: no-preference) {
+  .landing-brand { animation: landFadeUp .5s both .05s; }
+  .landing-title { animation: landFadeUp .6s both .12s; }
+  .landing-sub   { animation: landFadeUp .6s both .20s; }
+  .landing-feats li { animation: landFadeUp .5s both; }
+  .landing-feats li:nth-child(1) { animation-delay: .28s; }
+  .landing-feats li:nth-child(2) { animation-delay: .36s; }
+  .landing-feats li:nth-child(3) { animation-delay: .44s; }
+  .landing-feats li:nth-child(4) { animation-delay: .52s; }
+  .hero-visual { animation: landFadeUp .7s both .5s; }
+  .hv-card { animation: landFloat 5.5s ease-in-out infinite .9s; }
+  .landing-auth-inner { animation: landFadeUp .6s both .28s; }
+}
 
 /* ════════════ Sync badge ════════════ */
 .sync-badge {

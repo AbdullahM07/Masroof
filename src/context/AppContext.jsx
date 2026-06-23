@@ -64,8 +64,16 @@ export function AppProvider({ children }) {
     return () => clearTimeout(id)
   }, [state, userId, getToken])
 
+  // Pre-auth UI prefs (locale/theme) for the signed-out landing — there's no
+  // user state yet, so these drive the UI until a signed-in state loads.
+  const [pref, setPref] = useState(() => {
+    try { return { locale: 'en', theme: 'light', ...JSON.parse(localStorage.getItem('sm_pref') || '{}') } }
+    catch { return { locale: 'en', theme: 'light' } }
+  })
+  useEffect(() => { try { localStorage.setItem('sm_pref', JSON.stringify(pref)) } catch { /* quota */ } }, [pref])
+
   // Safe settings even before data loads (so locale/theme/t never crash).
-  const settings = state?.settings || defaultState().settings
+  const settings = state?.settings || { ...defaultState().settings, locale: pref.locale, theme: pref.theme }
 
   // Reflect theme + direction on <html> so CSS variables + RTL apply globally.
   useEffect(() => {
@@ -202,12 +210,14 @@ export function AppProvider({ children }) {
   const setSetting = useCallback((key, value) => patch(s => {
     s.settings[key] = value; return s
   }), [patch])
-  const toggleTheme = useCallback(() => patch(s => {
-    s.settings.theme = s.settings.theme === 'dark' ? 'light' : 'dark'; return s
-  }), [patch])
-  const toggleLocale = useCallback(() => patch(s => {
-    s.settings.locale = s.settings.locale === 'ar' ? 'en' : 'ar'; return s
-  }), [patch])
+  const toggleTheme = useCallback(() => {
+    if (state) patch(s => { s.settings.theme = s.settings.theme === 'dark' ? 'light' : 'dark'; return s })
+    else setPref(p => ({ ...p, theme: p.theme === 'dark' ? 'light' : 'dark' }))
+  }, [state, patch])
+  const toggleLocale = useCallback(() => {
+    if (state) patch(s => { s.settings.locale = s.settings.locale === 'ar' ? 'en' : 'ar'; return s })
+    else setPref(p => ({ ...p, locale: p.locale === 'ar' ? 'en' : 'ar' }))
+  }, [state, patch])
 
   // ── PIN / lock ──
   const setPin = useCallback((pin) => patch(s => {
