@@ -297,12 +297,6 @@ a { color: var(--brand-ink); }
 /* Fluent Dropdown has a min-width that can overflow narrow grid columns */
 .fui-Dropdown { min-width: 0; }
 
-/* Form controls are Fluent <Input>/<Select>/<Switch> — Fluent owns their look.
-   (The old native input/select/textarea styling was removed: its `input[type=…]`
-   selectors outranked Fluent's internal `.fui-Input__input` class and leaked a
-   second border/background/padding into the controls, so Inputs and Selects no
-   longer matched.) */
-
 .radio-group { display: flex; gap: 10px; }
 .radio-card {
   flex: 1;
@@ -378,8 +372,6 @@ a { color: var(--brand-ink); }
 /* ════════════ Filters ════════════ */
 .filters-row { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
 .filters-row > * { flex: 1; min-width: 130px; }
-/* (no .filters-row input/select rule — it leaked padding into Fluent's inner
-   <input>/<select> and made the boxes uneven; Fluent sizes them itself) */
 
 /* ════════════ Loading ════════════ */
 .app-loading { min-height: 100vh; display: grid; place-items: center; }
@@ -628,7 +620,7 @@ a { color: var(--brand-ink); }
 .switch .thumb { position: absolute; top: 3px; inset-inline-start: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.3); transition: .2s; }
 .switch input:checked + .track { background: var(--brand-grad); border-color: transparent; }
 .switch input:checked + .track + .thumb { inset-inline-start: 23px; }
-[dir='rtl'] .switch input:checked + .track + .thumb { inset-inline-start: 3px; transform: translateX(0); }
+[dir='rtl'] .switch input:checked + .track + .thumb { inset-inline-start: auto; inset-inline-end: 3px; transform: translateX(0); }
 
 /* settings rows */
 .set-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--border); }
@@ -739,6 +731,16 @@ a { color: var(--brand-ink); }
 .info:hover::after, .info:focus-visible::after { opacity: 1; transform: translateX(-50%) translateY(0); }
 .info:hover::before, .info:focus-visible::before { opacity: 1; }
 
+[dir='rtl'] .info::after,
+[dir='rtl'] .info::before {
+  left: 50%;
+  transform: translateX(-50%);
+}
+[dir='rtl'] .info:hover::after,
+[dir='rtl'] .info:focus-visible::after {
+  transform: translateX(-50%) translateY(0);
+}
+
 /* ════════════ Chart tooltip / donut centre ════════════ */
 .chart-tip {
   background: var(--surface); border: 1px solid var(--border);
@@ -779,7 +781,9 @@ a { color: var(--brand-ink); }
   pointer-events: none;
 }
 
-/* ════════════ Responsive ════════════ */
+/* ════════════════════════════════════════════════════════════
+   Responsive — enhanced for Arabic/RTL readability on mobile
+   ════════════════════════════════════════════════════════════ */
 @media (max-width: 1100px) {
   .grid-2, .grid-3 { grid-template-columns: 1fr; }
 }
@@ -798,21 +802,126 @@ a { color: var(--brand-ink); }
   .menu-btn { display: grid; }
   .topbar, .page-body { padding-inline: 16px; }
 }
-@media (max-width: 520px) {
-  .stats-grid { grid-template-columns: 1fr 1fr; }
-  .stat-value { font-size: 21px; }
+
+/* Mobile — enhanced for Arabic/RTL */
+@media (max-width: 640px) {
+  /* Arabic text is typically wider — use single column stats for readability */
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .stat-card { padding: 14px 16px; }
+  .stat-value { font-size: 22px; }
+
+  /* Two-column metric grid on mobile — adapted for RTL */
+  .pace-metrics {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .metric { padding: 10px 12px; }
+  .metric-value { font-size: 14px; }
+
+  /* Card padding reduced */
+  .card { padding: 14px; }
+  .card-title { font-size: 11px; gap: 6px; flex-wrap: wrap; }
+  .card-title .hint { font-size: 10px; }
+
+  /* Top bar */
+  .topbar { padding: 12px 14px; gap: 6px; }
+  .topbar-titles h1 { font-size: 15px; }
   .topbar-titles p { display: none; }
-  .page-body { padding-top: 16px; }
-  .pace-metrics { grid-template-columns: 1fr 1fr; }
-  /* keep the top bar on one line: truncate the title instead of pushing the
-     action buttons off-screen */
-  .topbar { gap: 8px; }
-  .topbar .row { min-width: 0; flex: 1; }
-  .topbar-titles { min-width: 0; }
-  .topbar-titles h1 { font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .topbar-actions { gap: 4px; flex-shrink: 0; }
   .topbar-actions .fui-Button { min-width: 32px; }
+  .sync-badge .sync-cap { display: none; }
+  .sync-badge { padding: 6px; }
+
+  /* Page body */
+  .page-body { padding: 14px 14px 40px; }
+
+  /* Landing page RTL text wrapping */
+  .landing-title { max-width: 100%; font-size: clamp(24px, 6vw, 32px); }
+  .landing-sub { max-width: 100%; }
+  .landing-hero { padding: 40px 18px 24px; gap: 12px; }
+
+  /* Filter row - better mobile wrap */
+  .filters-row > * { min-width: 100%; }
+  .filters-row { gap: 8px; }
+
+  /* Section spacing */
+  .section { margin-bottom: 16px; }
+  .section-head { margin-bottom: 10px; }
+  .section-head h2 { font-size: 14px; }
+
+  /* Recurring banner - stack on mobile */
+  .recurring-banner { flex-wrap: wrap; gap: 8px; padding: 10px 12px; }
+  .recurring-banner > :last-child { margin-inline-start: 0; width: 100%; }
+
+  /* Grids collapse earlier for Arabic */
+  .grid-2, .grid-3 { grid-template-columns: 1fr; gap: 12px; }
+  .two-col { grid-template-columns: 1fr; gap: 14px; }
+
+  /* Charts */
+  .chart-wrap { height: 200px; }
+
+  /* Rules grid */
+  .rule-grid { grid-template-columns: 1fr; gap: 10px; }
+  .rule-cell { padding: 10px; }
+
+  /* Lock screen */
+  .lock-box { padding: 24px 20px; }
+  .key { height: 50px; font-size: 18px; }
+  .keypad { gap: 8px; }
+
+  /* Accounts / Subs */
+  .acct-row, .sub-row { padding: 10px 0; gap: 8px; }
+
+  /* Tables */
+  .data-table { font-size: 12px; }
+  .data-table th, .data-table td { padding: 6px 8px; }
+
+  /* Credit cards */
+  .credit-card { min-height: 140px; padding: 16px; }
+  .cc-num { font-size: 14px; letter-spacing: 1px; }
+  .cc-name { font-size: 13px; }
+
+  /* Recent tx */
+  .tx-row { padding: 10px 2px; gap: 8px; }
+  .tx-desc { font-size: 12.5px; }
+  .tx-amt { font-size: 13px; }
+
+  /* Settings rows */
+  .set-row { flex-wrap: wrap; gap: 8px; padding: 10px 0; }
+
+  /* Form fields */
+  .form { gap: 10px; }
+
+  /* Insights */
+  .insight-row { padding: 8px 2px; gap: 8px; }
 }
+@media (max-width: 520px) {
+  .stats-grid { grid-template-columns: 1fr; }
+  .stat-value { font-size: 21px; }
+  .topbar-titles p { display: none; }
+  .page-body { padding-top: 12px; }
+  .pace-metrics { grid-template-columns: 1fr; }
+  .topbar { gap: 6px; }
+  .topbar .row { min-width: 0; flex: 1; }
+  .topbar-titles { min-width: 0; }
+  .topbar-titles h1 { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .topbar-actions { gap: 3px; flex-shrink: 0; }
+  .topbar-actions .fui-Button { min-width: 32px; }
+
+  /* Arabic text needs more room */
+  [dir='rtl'] .stat-value { font-size: 18px; }
+  [dir='rtl'] .topbar-titles h1 { font-size: 14px; }
+  [dir='rtl'] .card-title { letter-spacing: 0; }
+  [dir='rtl'] .stat-label { letter-spacing: 0; }
+
+  /* ensure landing RTL text wraps properly */
+  [dir='rtl'] .landing-title { font-size: 22px; }
+  [dir='rtl'] .landing-sub { font-size: 14px; }
+}
+
 /* smoother momentum scrolling for wide tables on touch devices */
 .table-wrap { -webkit-overflow-scrolling: touch; }
 
