@@ -5,7 +5,7 @@ import {
 } from '@fluentui/react-components'
 import { useApp } from '../context/AppContext.jsx'
 import { todayStr, currentMonthStr, formatDate } from '../lib/format.js'
-import { EmptyState, Money } from '../components/ui.jsx'
+import { EmptyState, Money } from '../components/ui/index.jsx'
 import { SelectMenu, MonthField } from '../components/fields.jsx'
 import { DeleteButton } from '../components/fluentBits.jsx'
 import { Icon } from '../components/icons.jsx'

@@ -1,7 +1,7 @@
 import { Button, Tooltip } from '@fluentui/react-components'
 import { UserButton } from '@clerk/clerk-react'
 import { useApp } from '../context/AppContext.jsx'
-import { Icon } from './icons.jsx'
+import { Icon } from '../components/icons.jsx'
 
 function SyncBadge({ status, t }) {
   const map = {

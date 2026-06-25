@@ -1,7 +1,7 @@
 import { SignIn } from '@clerk/clerk-react'
 import { useApp } from '../context/AppContext.jsx'
-import { Icon, CategoryIcon } from './icons.jsx'
-import { RingGauge } from './ui.jsx'
+import { Icon, CategoryIcon } from '../components/icons.jsx'
+import { RingGauge } from '../components/ui/index.jsx'
 
 // Signed-out landing page: marketing hero + animated preview on one side,
 // Clerk sign-in / sign-up on the other.

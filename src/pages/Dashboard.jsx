@@ -8,8 +8,8 @@ import {
 } from '../lib/calc.js'
 import { catColor } from '../lib/categories.js'
 import { Icon, CategoryIcon } from '../components/icons.jsx'
-import { DonutChart, PaymentBars, TrendChart, NetWorthChart } from '../components/Charts.jsx'
-import { StatCard, MonthPicker, EmptyState, ProgressBar, RingGauge, useCountUp, Info } from '../components/ui.jsx'
+import { DonutChart, PaymentBars, TrendChart, NetWorthChart } from '../components/charts/index.jsx'
+import { StatCard, MonthPicker, EmptyState, ProgressBar, RingGauge, useCountUp, Info } from '../components/ui/index.jsx'
 import { useToast } from '../components/Confirm.jsx'
 
 const STATUS_COLOR = { over: 'var(--danger)', on: 'var(--success)', under: '#0ea5e9', none: 'var(--text-faint)' }

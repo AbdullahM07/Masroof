@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { ProgressBar as FluentProgressBar } from '@fluentui/react-components'
-import { useApp } from '../context/AppContext.jsx'
-import { formatMoney } from '../lib/format.js'
-import { MonthField } from './fields.jsx'
-import { Icon } from './icons.jsx'
+import { useApp } from '../../context/AppContext.jsx'
+import { formatMoney } from '../../lib/format.js'
+import { MonthField } from '../fields.jsx'
+import { Icon } from '../icons.jsx'
 
 export function EmptyState({ icon = 'wallet', children }) {
   const Glyph = typeof icon === 'string' ? (Icon[icon] || Icon.wallet) : null

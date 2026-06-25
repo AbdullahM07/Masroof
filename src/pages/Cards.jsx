@@ -3,7 +3,7 @@ import { Button, Field, Input } from '@fluentui/react-components'
 import { useApp } from '../context/AppContext.jsx'
 import { currentMonthStr, formatMoney } from '../lib/format.js'
 import { CARD_COLORS } from '../lib/categories.js'
-import { EmptyState } from '../components/ui.jsx'
+import { EmptyState } from '../components/ui/index.jsx'
 import { useConfirm } from '../components/Confirm.jsx'
 
 export default function Cards() {

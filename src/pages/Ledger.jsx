@@ -6,7 +6,7 @@ import {
 import { useApp } from '../context/AppContext.jsx'
 import { formatDate } from '../lib/format.js'
 import { CATEGORIES, catColor } from '../lib/categories.js'
-import { EmptyState, Money } from '../components/ui.jsx'
+import { EmptyState, Money } from '../components/ui/index.jsx'
 import { SelectMenu } from '../components/fields.jsx'
 import { DeleteButton } from '../components/fluentBits.jsx'
 import { useConfirm } from '../components/Confirm.jsx'

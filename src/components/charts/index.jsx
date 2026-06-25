@@ -3,8 +3,8 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   AreaChart, Area,
 } from 'recharts'
-import { useApp } from '../context/AppContext.jsx'
-import { formatMoney } from '../lib/format.js'
+import { useApp } from '../../context/AppContext.jsx'
+import { formatMoney } from '../../lib/format.js'
 
 const EASE = 'ease-out'
 

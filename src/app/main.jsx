@@ -1,9 +1,9 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { ClerkProvider } from '@clerk/clerk-react'
-import { AppProvider } from './context/AppContext.jsx'
+import { AppProvider } from '../context/AppContext.jsx'
 import App from './App.jsx'
-import './styles/index.css'
+import '../styles/index.css'
 
 const clerkKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 
@@ -17,7 +17,7 @@ function MissingKeyNotice() {
         <h1 style={{ fontSize: 20, marginBottom: 8 }}>⚙️ Setup needed</h1>
         <p style={{ lineHeight: 1.6, color: '#555' }}>
           Set <code>VITE_CLERK_PUBLISHABLE_KEY</code> in your <code>.env.local</code> (and on Vercel)
-          to enable sign-in &amp; cloud sync. See <code>.env.example</code> and the README.
+          to enable sign-in & cloud sync. See <code>.env.example</code> and the README.
         </p>
       </div>
     </div>

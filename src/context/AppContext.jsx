@@ -3,7 +3,7 @@ import { useAuth, useUser } from '@clerk/clerk-react'
 import { uid, hashPin, defaultState, mergeDefaults, readCache, writeCache, readLegacyLocal } from '../lib/storage.js'
 import { fetchState, saveStateRemote } from '../lib/api.js'
 import { pendingRecurring } from '../lib/calc.js'
-import { makeT } from '../i18n.js'
+import { makeT } from '../i18n/index.js'
 
 const AppContext = createContext(null)
 

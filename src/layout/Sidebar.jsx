@@ -1,6 +1,6 @@
 import { Tab, TabList } from '@fluentui/react-components'
 import { useApp } from '../context/AppContext.jsx'
-import { Icon } from './icons.jsx'
+import { Icon } from '../components/icons.jsx'
 
 const TABS = ['dashboard', 'income', 'expenses', 'ledger', 'subscriptions', 'budgets', 'accounts', 'goals', 'cards', 'settings']
 
