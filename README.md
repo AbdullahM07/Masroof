@@ -116,7 +116,7 @@ animations, smooth scrolling, and selectable currency (EGP, USD, EUR, SAR, AED�
 **Help on hover** — every figure has a small ⓘ badge; hover it to read exactly what it means
 and how it's calculated.
 
----
+------------
 
 ## Notes / ملاحظات
 
