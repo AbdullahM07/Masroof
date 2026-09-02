@@ -104,9 +104,11 @@ merchant/payee + free-form tags, then search and filter by them.
 
 **Security (PIN lock)** — optional 4-digit PIN gate to protect your financial data, with a lock-now button. *(Local privacy guard — data still lives in your browser's storage.)*
 
-**Appearance** — Microsoft **Fluent**-inspired design with realistic line icons (no emoji),
-light / dark theme, English ⇄ العربية (full RTL), animated ring gauges, reveal & count-up
-animations, smooth scrolling, and selectable currency (EGP, USD, EUR, SAR, AED…).
+**Appearance** — a calm, "private banking" design system (warm neutral surfaces, one ink-navy
+accent, tabular numerals) built with **Tailwind CSS v4 + Radix primitives** and **Lucide** icons
+(no emoji). Light / dark theme, English ⇄ العربية (full RTL), animated pace gauge, reveal &
+count-up animations, a ⌘K command palette, and selectable currency (EGP, USD, EUR, SAR, AED…).
+Tokens, type scale and component rules are documented in [`DESIGN.md`](DESIGN.md).
 
 **Reports** — generate a clean, statement-style **PDF report** or a multi-sheet **Excel
 (.xlsx)** workbook (Summary / Income / Expenses / Budgets / Goals) for any month or all-time.
@@ -135,8 +137,9 @@ api/          Vercel serverless functions (state GET/PUT, Clerk auth, Mongo)
 src/
   lib/        storage/cache, api client, calculations, formatting, categories
   context/    global app state + cloud sync (data, theme, locale, PIN)
-  components/ Sidebar, TopBar, LockScreen, AuthScreen, Charts, shared UI
-  pages/      Dashboard, Income, Expenses, Ledger, Budgets, Goals, Cards, Settings
-  i18n.js     English / Arabic dictionary
-  styles/     design system (themes + RTL)
+  components/ ui/ (Button, Card, Field, Select, Dialog, Sheet, Table, …), charts/, icons, Confirm, LockScreen
+  layout/     Sidebar, TopBar, MobileNav (bottom tabs + sheet), AuthScreen (signed-out landing)
+  pages/      Dashboard, Income, Expenses, Ledger, Subscriptions, Budgets, Accounts, Goals, Cards, Settings
+  i18n/       English / Arabic dictionary
+  styles/     design tokens (light/dark), Tailwind theme, type scale, motion
 ```
