@@ -1,14 +1,10 @@
 import { useRef, useState } from 'react'
-import {
-  Button, Input, Switch, ToggleButton, Field,
-  Dialog, DialogSurface, DialogBody, DialogTitle, DialogContent, DialogActions,
-} from '@fluentui/react-components'
 import { useApp } from '../context/AppContext.jsx'
-import { Keypad } from '../components/LockScreen.jsx'
+import { Keypad, PinDots, PinError } from '../components/LockScreen.jsx'
 import { SelectMenu, MonthField } from '../components/fields.jsx'
 import { useConfirm, useToast } from '../components/Confirm.jsx'
-import { DangerButton } from '../components/fluentBits.jsx'
 import { Icon } from '../components/icons.jsx'
+import { Card, CardTitle, Button, Input, Field, Switch, Segmented, Dialog, DialogContent, DialogFooter, Stack } from '../components/ui/index.jsx'
 import { formatDate, currentMonthStr } from '../lib/format.js'
 import { buildReportModel, exportExcel, openPdfReport, exportCsv } from '../lib/report.js'
 
@@ -63,7 +59,7 @@ export default function Settings() {
   }
 
   function exportJson() {
-    download(`salary-manager-${new Date().toISOString().slice(0, 10)}.json`, exportData(), 'application/json')
+    download(`masroof-${new Date().toISOString().slice(0, 10)}.json`, exportData(), 'application/json')
   }
 
   async function onImport(e) {
@@ -81,132 +77,104 @@ export default function Settings() {
     input.value = ''
   }
 
-  function doClear() { setClearOpen(true) }
-
   return (
-    <div style={{ maxWidth: 720 }}>
+    <Stack className="max-w-[760px]">
       {/* Appearance */}
-      <div className="card section">
-        <div className="card-title">{t('appearance')}</div>
-
-        <div className="set-row">
-          <div><div className="label">{t('theme')}</div></div>
-          <div className="row" style={{ gap: 6 }}>
-            <ToggleButton appearance="subtle" checked={theme === 'light'} icon={<Icon.sun />} onClick={() => setSetting('theme', 'light')}>{t('light')}</ToggleButton>
-            <ToggleButton appearance="subtle" checked={theme === 'dark'} icon={<Icon.moon />} onClick={() => setSetting('theme', 'dark')}>{t('dark')}</ToggleButton>
-          </div>
+      <Card>
+        <CardTitle icon={<Icon.sun size={18} />}>{t('appearance')}</CardTitle>
+        <div className="divide-y divide-line">
+          <SettingRow label={t('theme')}>
+            <Segmented value={theme} onValueChange={(v) => setSetting('theme', v)} aria-label={t('theme')}
+              options={[
+                { value: 'light', label: t('light'), icon: <Icon.sun size={14} /> },
+                { value: 'dark', label: t('dark'), icon: <Icon.moon size={14} /> },
+              ]} />
+          </SettingRow>
+          <SettingRow label={t('language')}>
+            <Segmented value={locale} onValueChange={(v) => setSetting('locale', v)} aria-label={t('language')}
+              options={[{ value: 'en', label: 'English' }, { value: 'ar', label: 'العربية' }]} />
+          </SettingRow>
+          <SettingRow label={t('currency')}>
+            <SelectMenu value={currency} onChange={(v) => setSetting('currency', v)} className="w-32">
+              {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
+            </SelectMenu>
+          </SettingRow>
+          <SettingRow label={t('budgetAlerts')} desc={`${t('alertThreshold')} (${t('nearLimit')})`}>
+            <SelectMenu value={String(state.settings.alertThreshold ?? 80)} onChange={(v) => setSetting('alertThreshold', Number(v))} className="w-32">
+              {[70, 80, 90, 100].map(v => <option key={v} value={v}>{v}%</option>)}
+            </SelectMenu>
+          </SettingRow>
         </div>
-
-        <div className="set-row">
-          <div><div className="label">{t('language')}</div></div>
-          <div className="row" style={{ gap: 6 }}>
-            <ToggleButton appearance="subtle" checked={locale === 'en'} onClick={() => setSetting('locale', 'en')}>English</ToggleButton>
-            <ToggleButton appearance="subtle" checked={locale === 'ar'} onClick={() => setSetting('locale', 'ar')}>العربية</ToggleButton>
-          </div>
-        </div>
-
-        <div className="set-row">
-          <div><div className="label">{t('currency')}</div></div>
-          <SelectMenu value={currency} onChange={(_, d) => setSetting('currency', d.value)} style={{ minWidth: 120 }}>
-            {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
-          </SelectMenu>
-        </div>
-
-        <div className="set-row">
-          <div>
-            <div className="label">{t('budgetAlerts')}</div>
-            <div className="desc">{t('alertThreshold')} ({t('nearLimit')})</div>
-          </div>
-          <SelectMenu value={String(state.settings.alertThreshold ?? 80)} onChange={(_, d) => setSetting('alertThreshold', Number(d.value))} style={{ minWidth: 120 }}>
-            {[70, 80, 90, 100].map(v => <option key={v} value={v}>{v}%</option>)}
-          </SelectMenu>
-        </div>
-      </div>
+      </Card>
 
       {/* Security */}
-      <div className="card section">
-        <div className="card-title">{t('security')}</div>
-        <div className="set-row">
-          <div>
-            <div className="label row" style={{ gap: 7 }}><Icon.lock width={16} height={16} /> {t('pinLock')}</div>
-            <div className="desc">{t('pinLockDesc')}</div>
-          </div>
-          <Switch checked={pinOn}
-            onChange={(_, d) => { if (d.checked) setPinFlow(true); else disablePin() }} />
+      <Card>
+        <CardTitle icon={<Icon.lock size={18} />}>{t('security')}</CardTitle>
+        <div className="divide-y divide-line">
+          <SettingRow label={t('pinLock')} desc={t('pinLockDesc')}>
+            <Switch checked={pinOn} onCheckedChange={(on) => { if (on) setPinFlow(true); else disablePin() }} />
+          </SettingRow>
+          {pinOn && (
+            <SettingRow label={t('changePin')}>
+              <div className="flex gap-2">
+                <Button variant="secondary" size="sm" onClick={() => setPinFlow(true)}>{t('changePin')}</Button>
+                <Button variant="ghost" size="sm" icon={<Icon.lock size={14} />} onClick={lock}>{t('lockNow')}</Button>
+              </div>
+            </SettingRow>
+          )}
         </div>
-        {pinOn && (
-          <div className="set-row">
-            <div><div className="label">{t('changePin')}</div></div>
-            <div className="row" style={{ gap: 8 }}>
-              <Button appearance="outline" size="small" onClick={() => setPinFlow(true)}>{t('changePin')}</Button>
-              <Button appearance="subtle" size="small" onClick={lock}>{t('lockNow')}</Button>
-            </div>
-          </div>
-        )}
-      </div>
+      </Card>
 
       {/* Reports */}
-      <div className="card section">
-        <div className="card-title"><span className="ct-ico"><Icon.receipt /></span>{t('reports')}</div>
-        <div className="set-row">
-          <div><div className="label">{t('reportRange')}</div></div>
-          <SelectMenu value={rangeMode} onChange={(_, d) => setRangeMode(d.value)} style={{ minWidth: 150 }}>
-            <option value="month">{t('singleMonth')}</option>
-            <option value="range">{t('customRange')}</option>
-            <option value="all">{t('allTime')}</option>
-          </SelectMenu>
+      <Card>
+        <CardTitle icon={<Icon.pdf size={18} />}>{t('reports')}</CardTitle>
+        <div className="divide-y divide-line">
+          <SettingRow label={t('reportRange')}>
+            <Segmented value={rangeMode} onValueChange={setRangeMode} aria-label={t('reportRange')}
+              options={[{ value: 'month', label: t('singleMonth') }, { value: 'range', label: t('customRange') }, { value: 'all', label: t('allTime') }]} />
+          </SettingRow>
+          {rangeMode === 'month' && (
+            <SettingRow label={t('month')}>
+              <MonthField value={reportMonth} onChange={setReportMonth} />
+            </SettingRow>
+          )}
+          {rangeMode === 'range' && (
+            <SettingRow label={t('customRange')}>
+              <div className="flex flex-wrap gap-2">
+                <Field label={t('dateFrom')}><Input type="date" value={range.from} onChange={(e) => setRange({ ...range, from: e.target.value })} className="w-40" /></Field>
+                <Field label={t('dateTo')}><Input type="date" value={range.to} onChange={(e) => setRange({ ...range, to: e.target.value })} className="w-40" /></Field>
+              </div>
+            </SettingRow>
+          )}
         </div>
-        {rangeMode === 'month' && (
-          <div className="set-row">
-            <div><div className="label">{t('month')}</div></div>
-            <MonthField value={reportMonth} onChange={setReportMonth} />
-          </div>
-        )}
-        {rangeMode === 'range' && (
-          <div className="set-row">
-            <div><div className="label">{t('customRange')}</div></div>
-            <div className="row wrap" style={{ gap: 12 }}>
-              <label className="ledger-date"><span>{t('dateFrom')}</span>
-                <Input type="date" value={range.from} onChange={(_, d) => setRange({ ...range, from: d.value })} /></label>
-              <label className="ledger-date"><span>{t('dateTo')}</span>
-                <Input type="date" value={range.to} onChange={(_, d) => setRange({ ...range, to: d.value })} /></label>
-            </div>
-          </div>
-        )}
-        <div className="row wrap" style={{ gap: 10, marginTop: 6 }}>
-          <Button appearance="primary" icon={<Icon.download />} onClick={() => requirePin(onExcel)} disabled={busy}>
-            {t('excelReport')}
-          </Button>
-          <Button appearance="outline" icon={<Icon.receipt />} onClick={() => requirePin(onPdf)}>
-            {t('pdfReport')}
-          </Button>
-          <Button appearance="outline" icon={<Icon.download />} onClick={() => requirePin(onCsv)}>
-            {t('csvReport')}
-          </Button>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Button variant="primary" icon={<Icon.excel size={16} />} onClick={() => requirePin(onExcel)} loading={busy}>{t('excelReport')}</Button>
+          <Button variant="secondary" icon={<Icon.pdf size={16} />} onClick={() => requirePin(onPdf)}>{t('pdfReport')}</Button>
+          <Button variant="secondary" icon={<Icon.download size={16} />} onClick={() => requirePin(onCsv)}>{t('csvReport')}</Button>
         </div>
-      </div>
+      </Card>
 
       {/* Data */}
-      <div className="card">
-        <div className="card-title">{t('dataManagement')}</div>
-        <div className="row wrap" style={{ gap: 10 }}>
-          <Button appearance="outline" icon={<Icon.download />} onClick={() => requirePin(exportJson)}>{t('exportJson')}</Button>
-          <Button appearance="outline" icon={<Icon.upload />} onClick={() => fileRef.current?.click()}>{t('importJson')}</Button>
-          <DangerButton icon={<Icon.trash />} onClick={doClear}>{t('clearAll')}</DangerButton>
-          <input ref={fileRef} type="file" accept="application/json,.json" onChange={onImport} className="hide" />
+      <Card>
+        <CardTitle icon={<Icon.forecast size={18} />}>{t('dataManagement')}</CardTitle>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="secondary" icon={<Icon.download size={16} />} onClick={() => requirePin(exportJson)}>{t('exportJson')}</Button>
+          <Button variant="secondary" icon={<Icon.upload size={16} />} onClick={() => fileRef.current?.click()}>{t('importJson')}</Button>
+          <Button variant="destructiveGhost" icon={<Icon.trash size={16} />} onClick={() => setClearOpen(true)} className="border border-negative/30">{t('clearAll')}</Button>
+          <input ref={fileRef} type="file" accept="application/json,.json" onChange={onImport} className="hidden" />
         </div>
-        <div className="desc mt-16" style={{ color: 'var(--text-faint)', fontSize: 12 }}>
+        <p className="mt-4 t-caption text-ink-3 font-normal num-soft">
           {state.income.length + state.expenses.length} {t('transactions').toLowerCase()} · {state.cards.length} {t('cards').toLowerCase()} · {state.goals.length} {t('goals').toLowerCase()}
           {' · '}{formatDate(new Date().toISOString().slice(0, 10), locale)}
-        </div>
-      </div>
+        </p>
+      </Card>
 
-      {pinFlow && <PinSetup onClose={() => setPinFlow(false)} onSet={(pin) => { setPin(pin); setPinFlow(false) }} />}
+      <PinSetup open={pinFlow} onClose={() => setPinFlow(false)} onSet={(pin) => { setPin(pin); setPinFlow(false); toast(t('pinSet')) }} />
 
       <ClearDataDialog
         open={clearOpen}
         onClose={() => setClearOpen(false)}
-        onConfirmed={() => { clearAll(); setClearOpen(false) }}
+        onConfirmed={() => { clearAll(); setClearOpen(false); toast(t('deletedDone'), 'info') }}
         pinEnabled={pinOn}
         verifyPin={verifyPin}
         t={t}
@@ -220,11 +188,23 @@ export default function Settings() {
         onClose={() => setPinGate(null)}
         onSuccess={() => { const act = pinGate; setPinGate(null); act && act() }}
       />
+    </Stack>
+  )
+}
+
+function SettingRow({ label, desc, children }) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 py-3.5 first:pt-0 last:pb-0">
+      <div className="min-w-0 max-w-[36ch]">
+        <div className="font-medium text-ink">{label}</div>
+        {desc && <div className="t-small text-ink-2 mt-0.5">{desc}</div>}
+      </div>
+      <div className="flex items-center">{children}</div>
     </div>
   )
 }
 
-// Reusable PIN entry in a Fluent alert Dialog — gates a sensitive action.
+// Reusable PIN entry in an alert dialog — gates a sensitive action.
 function PinPromptDialog({ open, prompt, verifyPin, t, onClose, onSuccess }) {
   const [pin, setPin] = useState('')
   const [error, setError] = useState('')
@@ -235,39 +215,26 @@ function PinPromptDialog({ open, prompt, verifyPin, t, onClose, onSuccess }) {
     setPin(next)
     if (next.length === 4) {
       if (verifyPin(next)) { setPin(''); onSuccess() }
-      else { setError(t('wrongPin')); setTimeout(() => setPin(''), 300) }
+      else { setError(t('wrongPin')); setPin('') }
     }
   }
   function close() { setPin(''); setError(''); onClose() }
 
   return (
-    <Dialog open={open} modalType="alert" onOpenChange={(_, d) => { if (!d.open) close() }}>
-      <DialogSurface>
-        <DialogBody>
-          <DialogTitle>
-            <span className="row" style={{ gap: 8 }}><Icon.lock width={20} height={20} /> {t('confirmIdentity')}</span>
-          </DialogTitle>
-          <DialogContent>
-            <p style={{ color: 'var(--text-muted)', marginBottom: 8, textAlign: 'center' }}>{prompt}</p>
-            <div className="pin-dots">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <span key={i} className={`pin-dot ${i < pin.length ? 'filled' : ''}`} />
-              ))}
-            </div>
-            <div className="pin-error" style={{ textAlign: 'center' }}>{error}</div>
-            <Keypad onPress={press} onBack={() => { setError(''); setPin(p => p.slice(0, -1)) }} backLabel="⌫" />
-          </DialogContent>
-          <DialogActions>
-            <Button appearance="secondary" onClick={close}>{t('cancel')}</Button>
-          </DialogActions>
-        </DialogBody>
-      </DialogSurface>
+    <Dialog open={open} onOpenChange={(o) => { if (!o) close() }}>
+      <DialogContent alert hideClose className="max-w-sm text-center" title={<span className="inline-flex items-center gap-2"><Icon.lock size={18} />{t('confirmIdentity')}</span>} description={prompt}>
+        <PinDots count={pin.length} error={!!error} className="mt-6" />
+        <PinError>{error}</PinError>
+        <Keypad onPress={press} onBack={() => { setError(''); setPin(p => p.slice(0, -1)) }} />
+        <DialogFooter className="justify-center">
+          <Button variant="ghost" onClick={close}>{t('cancel')}</Button>
+        </DialogFooter>
+      </DialogContent>
     </Dialog>
   )
 }
 
 // Sensitive: confirm by typing the word, then (if a PIN is set) by entering it.
-// Rendered in a Fluent alert Dialog — no native confirm(), no light-dismiss.
 function ClearDataDialog({ open, onClose, onConfirmed, pinEnabled, verifyPin, t }) {
   const [step, setStep] = useState('confirm')
   const [typed, setTyped] = useState('')
@@ -291,62 +258,46 @@ function ClearDataDialog({ open, onClose, onConfirmed, pinEnabled, verifyPin, t 
     setPin(next)
     if (next.length === 4) {
       if (verifyPin(next)) finalize()
-      else { setError(t('wrongPin')); setTimeout(() => setPin(''), 300) }
+      else { setError(t('wrongPin')); setPin('') }
     }
   }
 
   const canDelete = typed.trim().toLowerCase() === word.toLowerCase()
 
   return (
-    <Dialog open={open} modalType="alert" onOpenChange={(_, d) => { if (!d.open) close() }}>
-      <DialogSurface>
-        <DialogBody>
-          <DialogTitle>
-            <span className="row" style={{ gap: 8, color: 'var(--danger)' }}>
-              <Icon.alert width={20} height={20} /> {t('clearConfirmTitle')}
-            </span>
-          </DialogTitle>
-
-          {step === 'confirm' ? (
-            <>
-              <DialogContent>
-                <p style={{ color: 'var(--text-muted)', marginBottom: 14, lineHeight: 1.5 }}>{t('clearConfirmBody')}</p>
-                <Field label={t('typeToConfirm', { word })}>
-                  <Input value={typed} onChange={(_, d) => setTyped(d.value)} placeholder={word} autoComplete="off" />
-                </Field>
-              </DialogContent>
-              <DialogActions>
-                <Button appearance="secondary" onClick={close}>{t('cancel')}</Button>
-                <DangerButton disabled={!canDelete} icon={<Icon.trash />} onClick={proceed}>
-                  {pinEnabled ? t('continueAction') : t('deleteEverything')}
-                </DangerButton>
-              </DialogActions>
-            </>
-          ) : (
-            <>
-              <DialogContent>
-                <p style={{ color: 'var(--text-muted)', marginBottom: 8, textAlign: 'center' }}>{t('enterPinToConfirm')}</p>
-                <div className="pin-dots">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <span key={i} className={`pin-dot ${i < pin.length ? 'filled' : ''}`} />
-                  ))}
-                </div>
-                <div className="pin-error" style={{ textAlign: 'center' }}>{error}</div>
-                <Keypad onPress={pressPin} onBack={() => { setError(''); setPin(p => p.slice(0, -1)) }} backLabel="⌫" />
-              </DialogContent>
-              <DialogActions>
-                <Button appearance="secondary" onClick={close}>{t('cancel')}</Button>
-              </DialogActions>
-            </>
-          )}
-        </DialogBody>
-      </DialogSurface>
+    <Dialog open={open} onOpenChange={(o) => { if (!o) close() }}>
+      <DialogContent alert hideClose className="max-w-md"
+        title={<span className="inline-flex items-center gap-2 text-negative"><Icon.alert size={18} />{t('clearConfirmTitle')}</span>}
+        description={step === 'confirm' ? t('clearConfirmBody') : t('enterPinToConfirm')}>
+        {step === 'confirm' ? (
+          <>
+            <Field label={t('typeToConfirm', { word })} className="mt-5">
+              <Input value={typed} onChange={(e) => setTyped(e.target.value)} placeholder={word} autoComplete="off" autoFocus />
+            </Field>
+            <DialogFooter>
+              <Button variant="secondary" onClick={close}>{t('cancel')}</Button>
+              <Button variant="destructive" disabled={!canDelete} icon={<Icon.trash size={16} />} onClick={proceed}>
+                {pinEnabled ? t('continueAction') : t('deleteEverything')}
+              </Button>
+            </DialogFooter>
+          </>
+        ) : (
+          <div className="text-center">
+            <PinDots count={pin.length} error={!!error} className="mt-6" />
+            <PinError>{error}</PinError>
+            <Keypad onPress={pressPin} onBack={() => { setError(''); setPin(p => p.slice(0, -1)) }} />
+            <DialogFooter className="justify-center">
+              <Button variant="ghost" onClick={close}>{t('cancel')}</Button>
+            </DialogFooter>
+          </div>
+        )}
+      </DialogContent>
     </Dialog>
   )
 }
 
-// Two-step PIN creation overlay (enter → confirm).
-function PinSetup({ onClose, onSet }) {
+// Two-step PIN creation (enter → confirm).
+function PinSetup({ open, onClose, onSet }) {
   const { t } = useApp()
   const [first, setFirst] = useState('')
   const [pin, setPin] = useState('')
@@ -361,26 +312,23 @@ function PinSetup({ onClose, onSet }) {
       if (stage === 'set') {
         setFirst(next); setPin('')
       } else {
-        if (next === first) onSet(next)
-        else { setError(t('pinMismatch')); setTimeout(() => { setPin(''); setFirst(''); }, 350) }
+        if (next === first) { onSet(next); setFirst(''); setPin('') }
+        else { setError(t('pinMismatch')); setPin(''); setFirst('') }
       }
     }
   }
+  function close() { setFirst(''); setPin(''); setError(''); onClose() }
 
   return (
-    <div className="lock-screen" style={{ position: 'fixed', inset: 0, zIndex: 500 }} onClick={onClose}>
-      <div className="lock-box" onClick={(e) => e.stopPropagation()}>
-        <div className="lock-logo"><Icon.lock width={28} height={28} /></div>
-        <h2>{stage === 'set' ? t('setPin') : t('confirmPin')}</h2>
-        <div className="pin-dots">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <span key={i} className={`pin-dot ${i < pin.length ? 'filled' : ''}`} />
-          ))}
-        </div>
-        <div className="pin-error">{error}</div>
+    <Dialog open={open} onOpenChange={(o) => { if (!o) close() }}>
+      <DialogContent alert hideClose className="max-w-sm text-center" title={<span className="inline-flex items-center gap-2"><Icon.lock size={18} />{stage === 'set' ? t('setPin') : t('confirmPin')}</span>} description={t('pinLockDesc')}>
+        <PinDots count={pin.length} error={!!error} className="mt-6" />
+        <PinError>{error}</PinError>
         <Keypad onPress={press} onBack={() => setPin(p => p.slice(0, -1))} />
-        <div className="lock-reset"><Button appearance="transparent" size="small" onClick={onClose}>{t('cancel')}</Button></div>
-      </div>
-    </div>
+        <DialogFooter className="justify-center">
+          <Button variant="ghost" onClick={close}>{t('cancel')}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

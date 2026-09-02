@@ -1,21 +1,27 @@
 import { useState } from 'react'
-import { Button, Field, Input } from '@fluentui/react-components'
 import { useApp } from '../context/AppContext.jsx'
 import { currentMonthStr, formatMoney } from '../lib/format.js'
 import { CARD_COLORS } from '../lib/categories.js'
-import { EmptyState } from '../components/ui/index.jsx'
-import { useConfirm } from '../components/Confirm.jsx'
+import { EmptyState, Card, CardTitle, Button, Input, Field, FormPanel, TwoCol } from '../components/ui/index.jsx'
+import { useConfirm, useToast } from '../components/Confirm.jsx'
+import { Icon } from '../components/icons.jsx'
+import { Mark } from '../layout/Wordmark.jsx'
+import { ColorSwatches } from './Accounts.jsx'
 
 export default function Cards() {
   const { state, t, currency, addCard, deleteCard } = useApp()
   const confirm = useConfirm()
+  const toast = useToast()
   const [form, setForm] = useState({ name: '', last4: '', color: CARD_COLORS[0] })
+  const [open, setOpen] = useState(false)
 
   function submit(e) {
     e.preventDefault()
     if (!form.name.trim()) return
     addCard({ name: form.name.trim(), last4: form.last4.trim(), color: form.color })
     setForm({ name: '', last4: '', color: CARD_COLORS[0] })
+    setOpen(false)
+    toast(t('cardAdded'))
   }
 
   async function remove(id) {
@@ -31,60 +37,68 @@ export default function Cards() {
   })
 
   return (
-    <div className="two-col">
-      <div className="card">
-        <div className="card-title">{t('addCard')}</div>
-        <form className="form" onSubmit={submit}>
-          <Field label={t('cardName')}>
-            <Input type="text" placeholder={t('cardNamePlace')} value={form.name}
-              onChange={(_, d) => setForm({ ...form, name: d.value })} required />
+    <TwoCol>
+      <FormPanel title={t('addCard')} icon={<Icon.cards size={18} />} open={open} onOpenChange={setOpen}>
+        <form className="flex flex-col gap-4" onSubmit={submit}>
+          <Field label={t('cardName')} required>
+            <Input type="text" placeholder={t('cardNamePlace')} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
           </Field>
-          <Field label={`${t('last4')} (${t('optional')})`}>
-            <Input type="text" input={{ inputMode: 'numeric', maxLength: 4 }} placeholder="1234" value={form.last4}
-              onChange={(_, d) => setForm({ ...form, last4: d.value.replace(/\D/g, '') })} />
+          <Field label={t('last4')} hint={t('optional')}>
+            <Input type="text" inputMode="numeric" maxLength={4} placeholder="1234" value={form.last4} className="[&_input]:num-soft"
+              onChange={(e) => setForm({ ...form, last4: e.target.value.replace(/\D/g, '') })} />
           </Field>
           <Field label={t('cardColor')}>
-            <div className="row wrap" style={{ gap: 10 }}>
-              {CARD_COLORS.map(c => (
-                <button type="button" key={c} onClick={() => setForm({ ...form, color: c })}
-                  aria-label={c} aria-pressed={form.color === c}
-                  style={{
-                    width: 30, height: 30, borderRadius: '50%', background: c, padding: 0,
-                    border: form.color === c ? '3px solid var(--text)' : '3px solid transparent',
-                    transform: form.color === c ? 'scale(1.15)' : 'none', transition: '.15s',
-                  }} />
-              ))}
-            </div>
+            <ColorSwatches value={form.color} onChange={(c) => setForm({ ...form, color: c })} size={30} />
           </Field>
-          <Button type="submit" appearance="primary" style={{ width: '100%' }}>{t('addCard')}</Button>
+          <CardVisual name={form.name || t('cardName')} last4={form.last4} color={form.color} t={t} preview />
+          <Button type="submit" variant="primary" size="lg" className="w-full">{t('addCard')}</Button>
         </form>
-      </div>
+      </FormPanel>
 
-      <div className="card">
-        <div className="card-title">{t('savedCards')}</div>
+      <Card>
+        <CardTitle>{t('savedCards')}</CardTitle>
         {state.cards.length === 0
-          ? <EmptyState icon="cards"><p>{t('noCards')}</p></EmptyState>
+          ? <EmptyState art="card" title={t('noCards')} action={<Button variant="primary" size="sm" icon={<Icon.plus size={15} />} onClick={() => setOpen(true)}>{t('addCard')}</Button>} />
           : (
-            <div className="cards-grid">
+            <div className="grid gap-4 sm:grid-cols-2 stagger">
               {state.cards.map(card => (
-                <div className="credit-card" key={card.id}
-                  style={{ background: `linear-gradient(135deg, ${card.color}dd, ${card.color})` }}>
-                  <div className="cc-top">
-                    <div className="cc-chip" />
-                    <div className="cc-brand">{t('card')}</div>
-                  </div>
-                  <div className="cc-num">{card.last4 ? `•••• •••• •••• ${card.last4}` : t('noNumberSaved')}</div>
-                  <div className="cc-bottom">
-                    <div>
-                      <div className="cc-name">{card.name}</div>
-                      <div className="cc-spent">{formatMoney(spentByCard[card.id] || 0, currency, { short: true })} · {t('spentOnCard')}</div>
-                    </div>
-                    <button className="cc-remove" onClick={() => remove(card.id)}>{t('remove')}</button>
-                  </div>
-                </div>
+                <CardVisual key={card.id} name={card.name} last4={card.last4} color={card.color} t={t}
+                  spent={formatMoney(spentByCard[card.id] || 0, currency, { short: true })} onRemove={() => remove(card.id)} />
               ))}
             </div>
           )}
+      </Card>
+    </TwoCol>
+  )
+}
+
+// Bank-card visual: one deep solid colour, engraved-style pattern, white type.
+export function CardVisual({ name, last4, color, spent, onRemove, t, preview = false }) {
+  return (
+    <div
+      className="relative aspect-[1.66] w-full overflow-hidden rounded-lg p-5 text-white shadow-card select-none"
+      style={{ background: color }}
+    >
+      <div className="pointer-events-none absolute inset-0 opacity-[0.14]" style={{ background: 'radial-gradient(120% 90% at 100% 0%, #fff 0%, transparent 55%)' }} />
+      <div className="pointer-events-none absolute -bottom-10 -end-6 h-40 w-40 rounded-full border border-white/15" />
+      <div className="pointer-events-none absolute -bottom-16 -end-14 h-56 w-56 rounded-full border border-white/10" />
+      <div className="relative flex h-full flex-col justify-between">
+        <div className="flex items-start justify-between">
+          <span className="block h-7 w-9 rounded-[4px] bg-white/25 ring-1 ring-white/30">
+            <span className="block h-full w-full rounded-[4px] bg-[linear-gradient(90deg,transparent_45%,rgba(255,255,255,.35)_45%,rgba(255,255,255,.35)_55%,transparent_55%)]" />
+          </span>
+          <span className="t-caption uppercase tracking-[0.12em] text-white/80">{t('card')}</span>
+        </div>
+        <div className="num-soft text-[17px] tracking-[0.18em] text-white/90">{last4 ? `•••• •••• •••• ${last4}` : t('noNumberSaved')}</div>
+        <div className="flex items-end justify-between gap-3">
+          <div className="min-w-0">
+            <div className="truncate text-[14px] font-semibold">{name}</div>
+            {spent != null && <div className="t-caption text-white/75 num-soft font-normal">{spent} · {t('spentOnCard')}</div>}
+          </div>
+          {!preview && onRemove && (
+            <button type="button" onClick={onRemove} className="rounded-sm bg-white/15 px-2.5 py-1 t-caption text-white hover:bg-white/25 transition-colors">{t('remove')}</button>
+          )}
+        </div>
       </div>
     </div>
   )
