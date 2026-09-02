@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 
 // Dev-only: serve the `/api` serverless functions inside the Vite dev server, so
 // `bun run dev` is a full local environment (no Vercel CLI needed). In production
@@ -32,6 +33,23 @@ function devApi() {
   }
 }
 
+// Preload the Latin Inter file from the HTML so first paint lands in the real
+// typeface without waiting for CSS → font discovery (one fewer round trip on LCP).
+function preloadFonts() {
+  return {
+    name: 'preload-fonts',
+    apply: 'build',
+    transformIndexHtml: {
+      order: 'post',
+      handler(_html, ctx) {
+        const file = Object.keys(ctx.bundle || {}).find(k => /inter-latin-wght-normal.*\.woff2$/.test(k))
+        if (!file) return []
+        return [{ tag: 'link', attrs: { rel: 'preload', as: 'font', type: 'font/woff2', crossorigin: '', href: '/' + file }, injectTo: 'head' }]
+      },
+    },
+  }
+}
+
 export default defineConfig(({ mode }) => {
   // Load ALL env vars (not just VITE_*) so the dev API handler can read the
   // server-only CLERK_SECRET_KEY / MONGODB_URI from .env.local.
@@ -40,8 +58,21 @@ export default defineConfig(({ mode }) => {
     if (env[k]) process.env[k] = env[k]
   }
   return {
-    plugins: [react(), devApi()],
+    plugins: [react(), tailwindcss(), devApi(), preloadFonts()],
+    // Pre-bundle the lazily imported Clerk locale so the dev server never 504s on first use.
+    optimizeDeps: { include: ['@clerk/localizations/ar-SA'] },
     server: { port: 3000, host: true, strictPort: true },
     preview: { port: 3000, host: true, strictPort: true },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            charts: ['recharts'],
+            clerk: ['@clerk/clerk-react'],
+            xlsx: ['xlsx'],
+          },
+        },
+      },
+    },
   }
 })
