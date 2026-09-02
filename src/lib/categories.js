@@ -1,27 +1,30 @@
 // Expense categories. `kind` maps each category to the 50/30/20 budgeting
 // rule buckets: needs (essentials), wants (lifestyle), savings (savings/debt).
+// Colours are the muted category palette from DESIGN.md — distinguishable in
+// both themes, never used as filled chips. `icon` is kept for the report
+// exporters; the UI draws Lucide glyphs via CategoryIcon.
 export const CATEGORIES = [
-  { key: 'food',          icon: '🍔', color: '#f97316', kind: 'needs'   },
-  { key: 'rent',          icon: '🏠', color: '#8b5cf6', kind: 'needs'   },
-  { key: 'transport',     icon: '🚗', color: '#3b82f6', kind: 'needs'   },
-  { key: 'bills',         icon: '💡', color: '#6366f1', kind: 'needs'   },
-  { key: 'health',        icon: '💊', color: '#10b981', kind: 'needs'   },
-  { key: 'education',     icon: '📚', color: '#0ea5e9', kind: 'needs'   },
-  { key: 'shopping',      icon: '🛍️', color: '#f59e0b', kind: 'wants'   },
-  { key: 'entertainment', icon: '🎬', color: '#ec4899', kind: 'wants'   },
-  { key: 'savings',       icon: '🐖', color: '#14b8a6', kind: 'savings' },
-  { key: 'debt',          icon: '💳', color: '#ef4444', kind: 'savings' },
-  { key: 'other',         icon: '📦', color: '#94a3b8', kind: 'wants'   },
+  { key: 'food',          icon: '🍔', color: '#c2703e', kind: 'needs'   }, // terracotta
+  { key: 'rent',          icon: '🏠', color: '#6f5ba6', kind: 'needs'   }, // plum
+  { key: 'transport',     icon: '🚗', color: '#3a78a8', kind: 'needs'   }, // steel
+  { key: 'bills',         icon: '💡', color: '#b08a2e', kind: 'needs'   }, // ochre
+  { key: 'health',        icon: '💊', color: '#3e8e6e', kind: 'needs'   }, // jade
+  { key: 'education',     icon: '📚', color: '#2f7f8f', kind: 'needs'   }, // teal
+  { key: 'shopping',      icon: '🛍️', color: '#c05c7a', kind: 'wants'   }, // rose
+  { key: 'entertainment', icon: '🎬', color: '#9a5c9e', kind: 'wants'   }, // mauve
+  { key: 'savings',       icon: '🐖', color: '#4e8a3b', kind: 'savings' }, // moss
+  { key: 'debt',          icon: '💳', color: '#a8453a', kind: 'savings' }, // brick
+  { key: 'other',         icon: '📦', color: '#8a857b', kind: 'wants'   }, // stone
 ]
 
 export const CATEGORY_MAP = Object.fromEntries(CATEGORIES.map(c => [c.key, c]))
 
 export function catIcon(key)  { return CATEGORY_MAP[key]?.icon  || '💸' }
-export function catColor(key) { return CATEGORY_MAP[key]?.color || '#94a3b8' }
+export function catColor(key) { return CATEGORY_MAP[key]?.color || '#8a857b' }
 export function catKind(key)  { return CATEGORY_MAP[key]?.kind  || 'wants' }
 
-// Card gradient palette (used by the cards page + payment chart).
+// Card / account palette (deep, bank-note tones; white text passes AA on all).
 export const CARD_COLORS = [
-  '#4f46e5', '#7c3aed', '#dc2626', '#059669',
-  '#d97706', '#0891b2', '#be185d', '#1e293b',
+  '#1e2f52', '#2f5d50', '#6b3a3a', '#4a4a6a',
+  '#7a5a2b', '#2b5b6b', '#5a3f63', '#2a2a2a',
 ]
