@@ -1,20 +1,12 @@
 import { useState } from 'react'
-import { Button, makeStyles, tokens } from '@fluentui/react-components'
 import { useApp } from '../context/AppContext.jsx'
+import { cn } from '../lib/utils.js'
 import { useConfirm } from './Confirm.jsx'
 import { Icon } from './icons.jsx'
+import { Button } from './ui/button.jsx'
+import { Mark } from '../layout/Wordmark.jsx'
 
 const LEN = 4
-
-const useKeyStyles = makeStyles({
-  key: {
-    width: '100%',
-    minWidth: 0,
-    height: '56px',
-    fontSize: tokens.fontSizeBase500,
-    fontWeight: tokens.fontWeightSemibold,
-  },
-})
 
 // Unlock-only screen: a PIN already exists (enabling/changing happens in Settings).
 export default function LockScreen() {
@@ -32,7 +24,7 @@ export default function LockScreen() {
         unlock()
       } else {
         setError(t('wrongPin'))
-        setTimeout(() => setPin(''), 300)
+        setPin('')
       }
     }
   }
@@ -43,39 +35,52 @@ export default function LockScreen() {
   }
 
   return (
-    <div className="lock-screen">
-      <div className="lock-box">
-        <div className="lock-logo"><Icon.lock width={28} height={28} /></div>
-        <h2>{t('enterPin')}</h2>
-        <p className="sub">{t('appName')}</p>
-
-        <div className="pin-dots">
-          {Array.from({ length: LEN }).map((_, i) => (
-            <span key={i} className={`pin-dot ${i < pin.length ? 'filled' : ''}`} />
-          ))}
-        </div>
-        <div className="pin-error">{error}</div>
-
-        <Keypad onPress={press} onBack={() => { setError(''); setPin(p => p.slice(0, -1)) }} backLabel="⌫" />
-
-        <div className="lock-reset">
-          <Button appearance="transparent" size="small" onClick={reset}>{t('forgotPin')}</Button>
-        </div>
+    <div className="min-h-screen bg-canvas grid place-items-center p-6">
+      <div className="w-full max-w-[340px] card p-7 text-center page-enter">
+        <div className="flex items-center justify-center gap-2 text-ink-3 mb-6"><Mark size={22} /><span className="t-small font-medium">{t('appName')}</span></div>
+        <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-accent-soft text-accent-ink"><Icon.lock size={22} /></span>
+        <h2 className="t-h2 mt-4">{t('enterPin')}</h2>
+        <PinDots count={pin.length} error={!!error} className="mt-6" />
+        <PinError>{error}</PinError>
+        <Keypad onPress={press} onBack={() => { setError(''); setPin(p => p.slice(0, -1)) }} />
+        <Button variant="link" size="sm" onClick={reset} className="mt-5 text-ink-3 hover:text-negative">{t('forgotPin')}</Button>
       </div>
     </div>
   )
 }
 
-export function Keypad({ onPress, onBack, backLabel = '⌫' }) {
-  const s = useKeyStyles()
+export function PinDots({ count, error, className }) {
   return (
-    <div className="keypad">
-      {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
-        <Button key={n} appearance="subtle" className={s.key} onClick={() => onPress(String(n))}>{n}</Button>
+    <div className={cn('flex justify-center gap-3', error && 'shake', className)} aria-live="polite">
+      {Array.from({ length: LEN }).map((_, i) => (
+        <span
+          key={i}
+          className={cn(
+            'h-3 w-3 rounded-full border-2 transition-[background-color,transform,border-color] duration-150',
+            i < count ? 'scale-110 border-accent bg-accent' : 'border-line-strong bg-transparent',
+            error && (i < count ? 'border-negative bg-negative' : 'border-negative'),
+          )}
+        />
       ))}
+    </div>
+  )
+}
+
+export function PinError({ children }) {
+  return <div className="mt-3 min-h-5 t-small font-medium text-negative" role="alert">{children}</div>
+}
+
+export function Keypad({ onPress, onBack }) {
+  const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
+  const cls = 'h-14 rounded-md bg-surface-2 text-[20px] font-medium num-soft text-ink hover:bg-surface-3 active:scale-[0.97] transition-[background-color,transform] duration-100'
+  return (
+    <div className="mt-4 grid grid-cols-3 gap-2">
+      {keys.map(n => <button key={n} type="button" className={cls} onClick={() => onPress(n)}>{n}</button>)}
       <span />
-      <Button appearance="subtle" className={s.key} onClick={() => onPress('0')}>0</Button>
-      <Button appearance="subtle" className={s.key} onClick={onBack} aria-label="backspace">{backLabel}</Button>
+      <button type="button" className={cls} onClick={() => onPress('0')}>0</button>
+      <button type="button" className={cn(cls, 'text-ink-3 flex items-center justify-center')} onClick={onBack} aria-label="backspace">
+        <Icon.backspace size={22} className="rtl:rotate-180" />
+      </button>
     </div>
   )
 }
