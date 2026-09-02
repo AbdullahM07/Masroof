@@ -1,106 +1,116 @@
+// App-level UI atoms shared by the pages. Primitives live in their own files.
 import { useEffect, useRef, useState } from 'react'
-import { ProgressBar as FluentProgressBar } from '@fluentui/react-components'
 import { useApp } from '../../context/AppContext.jsx'
 import { formatMoney } from '../../lib/format.js'
+import { cn } from '../../lib/utils.js'
 import { MonthField } from '../fields.jsx'
 import { Icon } from '../icons.jsx'
+import { Tooltip } from './overlay.jsx'
+import { Progress } from './controls.jsx'
 
-export function EmptyState({ icon = 'wallet', children }) {
-  const Glyph = typeof icon === 'string' ? (Icon[icon] || Icon.wallet) : null
-  return (
-    <div className="empty-state">
-      <span className="empty-ico">{Glyph ? <Glyph /> : icon}</span>
-      {children}
-    </div>
-  )
+export { Button, DeleteButton, IconButton } from './button.jsx'
+export { Card, CardTitle } from './card.jsx'
+export { Input, Textarea, Field, Label } from './input.jsx'
+export { Select } from './select.jsx'
+export { Popover, PopoverTrigger, PopoverContent, Tooltip, TooltipProvider, Dialog, DialogTrigger, DialogClose, DialogContent, DialogFooter, SheetContent } from './overlay.jsx'
+export { Switch, Segmented, Badge, Progress, Skeleton, Tabs, TabsList, TabsTrigger, TabsContent } from './controls.jsx'
+export { Table, THead, TBody, TR, TH, TD, RowActions, TableTotal } from './table.jsx'
+export { EmptyState } from './empty-state.jsx'
+
+export function MonthPicker({ value, onChange, className }) {
+  return <MonthField value={value} onChange={onChange} className={className} />
 }
 
-export function MonthPicker({ value, onChange }) {
-  const { t } = useApp()
-  return (
-    <div className="row" style={{ gap: 8, color: 'var(--text-muted)', fontSize: 13 }}>
-      <span>{t('month')}</span>
-      <MonthField value={value} onChange={onChange} />
-    </div>
-  )
-}
-
-// status: 'good' | 'warn' | 'over' | '' → maps to a Fluent ProgressBar color
-const PROGRESS_COLOR = { good: 'success', warn: 'warning', over: 'error' }
+// Back-compat name used by pages: status-coloured progress bar.
 export function ProgressBar({ pct, status = '' }) {
-  const value = Math.min(1, Math.max(0, pct / 100))
-  return <FluentProgressBar value={value} color={PROGRESS_COLOR[status] || 'brand'} thickness="large" shape="rounded" />
+  return <Progress pct={pct} status={status || 'accent'} />
 }
 
-// Animated circular gauge ("spin ring"). `value`/`max` drive the arc;
-// the arc animates from empty on mount. Children render in the centre.
-export function RingGauge({ value, max = 100, size = 132, stroke = 11, color = 'var(--brand)', track = 'var(--surface-alt)', children }) {
+// Arc gauge: 240° sweep open at the bottom, thin stroke, animates on mount.
+export function RingGauge({ value, max = 100, size = 160, stroke = 8, color = 'var(--accent-ink)', track = 'var(--surface-3)', sweep = 240, children, className }) {
   const r = (size - stroke) / 2
   const circ = 2 * Math.PI * r
+  const arcLen = circ * (sweep / 360)
   const pct = Math.max(0, Math.min(1, max > 0 ? value / max : 0))
   const [draw, setDraw] = useState(0)
   useEffect(() => {
     const id = requestAnimationFrame(() => setDraw(pct))
     return () => cancelAnimationFrame(id)
   }, [pct])
-  const offset = circ * (1 - draw)
+  const rotate = 90 + (360 - sweep) / 2
   return (
-    <div className="ring" style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={track} strokeWidth={stroke} />
-        <circle
-          cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={stroke}
-          strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={offset}
-          transform={`rotate(-90 ${size / 2} ${size / 2})`}
-          style={{ transition: 'stroke-dashoffset 1.1s cubic-bezier(.22,1,.36,1)' }}
-        />
+    <div className={cn('relative inline-grid place-items-center', className)} style={{ width: size, height: size }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="block">
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={track} strokeWidth={stroke}
+          strokeLinecap="round" strokeDasharray={`${arcLen} ${circ}`} transform={`rotate(${rotate} ${size / 2} ${size / 2})`} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={stroke}
+          strokeLinecap="round" strokeDasharray={`${arcLen * draw} ${circ}`} transform={`rotate(${rotate} ${size / 2} ${size / 2})`}
+          style={{ transition: 'stroke-dasharray 1s var(--ease)' }} />
       </svg>
-      <div className="ring-center">{children}</div>
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-3">{children}</div>
     </div>
   )
 }
 
 // Count-up animation for KPI numbers. Returns the animated numeric value.
-export function useCountUp(target, duration = 900) {
+// Updates are capped at ~16 steps so the hero relayouts stay cheap on slow devices.
+export function useCountUp(target, duration = 700, steps = 16) {
   const [val, setVal] = useState(0)
-  const ref = useRef({ from: 0, start: 0 })
+  const ref = useRef(0)
   useEffect(() => {
     const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
-    if (reduce) { setVal(target); return }
-    ref.current.from = val
+    if (reduce) { setVal(target); ref.current = target; return }
     let raf
+    const from = ref.current
     const startT = performance.now()
-    const from = ref.current.from
+    const interval = duration / steps
+    let last = -Infinity
     const tick = (now) => {
       const p = Math.min(1, (now - startT) / duration)
-      const eased = 1 - Math.pow(1 - p, 3)
-      setVal(from + (target - from) * eased)
+      if (p >= 1 || now - last >= interval) {
+        last = now
+        const eased = 1 - Math.pow(1 - p, 3)
+        const v = from + (target - from) * eased
+        ref.current = v
+        setVal(v)
+      }
       if (p < 1) raf = requestAnimationFrame(tick)
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [target, duration])
+  }, [target, duration, steps])
   return val
 }
 
-// Small "i" badge that reveals an explanation on hover/focus.
+// Small "i" badge that explains a figure on hover/focus.
 export function Info({ tip }) {
   if (!tip) return null
-  return <span className="info" tabIndex={0} data-tip={tip} aria-label={tip}>i</span>
+  return (
+    <Tooltip content={tip} side="top">
+      <button
+        type="button"
+        aria-label={tip}
+        className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-line-strong text-ink-3 text-[10px] font-semibold leading-none hover:border-accent-ink hover:text-accent-ink transition-colors ms-1 align-middle"
+      >
+        i
+      </button>
+    </Tooltip>
+  )
 }
 
-// KPI card. `icon` is an SVG node (no background chip). `feature` paints it accent.
-export function StatCard({ icon, label, value, valueClass = '', delta, deltaInvert, feature, sub, tip }) {
+// Secondary KPI tile.
+export function StatCard({ icon, label, value, valueClass = '', delta, deltaInvert, sub, tip, className }) {
   return (
-    <div className={`stat-card reveal ${feature ? 'feature' : ''}`}>
-      <div className="stat-top">
-        <span className="stat-label">{label}{tip && <Info tip={tip} />}</span>
-        {icon && <span className="stat-ico">{icon}</span>}
+    <div className={cn('card flex flex-col gap-2 min-w-0', className)}>
+      <div className="flex items-center justify-between gap-2">
+        <span className="t-small text-ink-2 flex items-center min-w-0"><span className="truncate">{label}</span>{tip && <Info tip={tip} />}</span>
+        {icon && <span className="text-ink-3 inline-flex shrink-0">{icon}</span>}
       </div>
-      <div className={`stat-value ${valueClass}`}>{value}</div>
-      {sub && <div className="stat-sub">{sub}</div>}
-      {delta != null && <DeltaTag pct={delta} invert={deltaInvert} />}
+      <div className={cn('num text-[24px] leading-7 text-ink truncate', valueClass)}>{value}</div>
+      <div className="flex items-center justify-between gap-2 min-h-4">
+        {sub && <span className="t-small text-ink-3 truncate">{sub}</span>}
+        {delta != null && <DeltaTag pct={delta} invert={deltaInvert} />}
+      </div>
     </div>
   )
 }
@@ -109,17 +119,26 @@ export function DeltaTag({ pct, invert = false }) {
   const { t } = useApp()
   if (pct == null) return null
   const up = pct >= 0
-  const cls = pct === 0 ? 'flat' : (up === !invert ? 'up' : 'down')
+  const good = pct === 0 ? null : (up === !invert)
   const Arrow = pct === 0 ? null : (up ? Icon.trendUp : Icon.trendDown)
   return (
-    <span className={`stat-delta ${cls}`}>
-      {Arrow && <Arrow width={14} height={14} />}
-      {Math.abs(pct).toFixed(0)}% <span className="delta-cap">{t('vsLastMonth')}</span>
+    <span className={cn('inline-flex items-center gap-1 t-caption num-soft', good == null ? 'text-ink-3' : good ? 'text-positive' : 'text-negative')}>
+      {Arrow && <Arrow size={13} />}
+      {Math.abs(pct).toFixed(0)}%
+      <span className="text-ink-3 font-normal hidden sm:inline">{t('vsLastMonth')}</span>
     </span>
   )
 }
 
+// Money strings are Latin in both locales; <bdi> keeps sign and unit in order inside RTL text.
 export function Money({ value, short = false, sign = false }) {
   const { currency } = useApp()
-  return <>{formatMoney(value, currency, { short, sign })}</>
+  return <bdi>{formatMoney(value, currency, { short, sign })}</bdi>
 }
+
+// Section wrapper with the standard vertical rhythm.
+export function Stack({ className, children }) {
+  return <div className={cn('flex flex-col gap-4 sm:gap-5', className)}>{children}</div>
+}
+export { FormPanel, TwoCol, CurrencySuffix, useMediaQuery } from './form-panel.jsx'
+export { Reveal } from './reveal.jsx'
